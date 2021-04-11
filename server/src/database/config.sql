@@ -37,3 +37,4 @@ insert into relation values (DEFAULT, 'maybe');
 insert into relation values (DEFAULT, 'going');
 
 insert into place values (DEFAULT, 'Praça Joca Neves', 'Praça top', 'joca-neves.png', ST_SetSRID(ST_MakePoint(-50.3350545, -27.81494), 4326));
+insert into place values (DEFAULT, 'Parque Jonas Ramos', 'Tanque', 'tanque.jpg', ST_SetSRID(ST_MakePoint(-50.3223664, -27.8139213), 4326));
