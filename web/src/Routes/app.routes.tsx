@@ -1,11 +1,12 @@
 import React from 'react'
 import { Route, Switch } from 'react-router'
-import Home from './pages/Home'
+import Publace from '../pages/Publace'
 
 function Routes() {
     return (
         <Switch>
-            <Route exact path='/' component={Home} />
+            <Route exact path='/publace' component={Publace} />
+            <Route path="*" component={Publace} />   
         </Switch>
     )
 }

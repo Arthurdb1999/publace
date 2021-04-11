@@ -1,93 +1,97 @@
-import React, { useEffect, useState } from 'react'
-import { TileLayer, Marker, Popup, MapContainer } from 'react-leaflet'
-import publaceLogo from '../assets/publaceLogo.svg'
-import { FiX, FiCircle, FiEdit } from 'react-icons/fi'
-import { places } from '../utils/places'
-import Navigation from '../assets/icons/navigation.svg'
+import React, { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { Link } from 'react-router-dom'
 
-import 'leaflet/dist/leaflet.css'
+import publaceLogo from '../assets/publaceLogo.svg'
+
 import '../styles/home.css'
-import MapIcon from '../utils/mapIcon'
-import MapPlaceIcon from '../utils/mapPlaceIcon'
-import { LatLngExpression } from 'leaflet'
+import api from '../services/api'
 
 function Home() {
 
-    const [showSideHeader, setShowSideHeader] = useState(true)
-    const [latLon, setLatLon] = useState<LatLngExpression>([0, 0])
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [name, setName] = useState('')
 
-    useEffect(() => {
-        navigator.geolocation.getCurrentPosition(({ coords }) => {
-            setLatLon([coords.latitude, coords.longitude])
+    const [login, setLogin] = useState(true)
+    const { signIn } = useAuth()
+
+    async function register() {
+
+        const response = await api.post('/user', {
+            name, email, password
         })
-    }, [])
+
+        setEmail('')
+        setPassword('')
+        setLogin(true)
+    }
 
     return (
-        <div id="page-map">
-            <div className='header'>
+        <div id="page-content">
+            <div className="inputContainer">
                 <img src={publaceLogo} alt="publace" />
-            </div>
+                {login ? (
+                    <>
+                        <div className="inputBox">
+                            <input
+                                autoFocus
+                                placeholder='Digite seu Email'
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                            />
 
-            <div className='content'>
-                <MapContainer
-                    center={[-27.8146158, -50.3228624]}
-                    zoom={15}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                    }}
-                >
-                    <TileLayer
-                        url='https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}'
-                        tileSize={256}
-                        attribution='© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>'
-                        maxZoom={18}
-                        id='mapbox/light-v10'
-                        accessToken='pk.eyJ1IjoiYXJ0aHVyZGIxOTk5IiwiYSI6ImNrZzdkZmpiajA2ZXEyeW16OXZ6N200a2wifQ.SPOZk5iCSDYWLNqS62uB8w'
-                    />
-                    <div className="subtitles">
-                        <div className="subtitleLeft">
-                            <div className="subtitle">
-                                <img src={Navigation} alt="Localização atual" />
-                                <span>Localização atual</span>
-                            </div>
-                            <div className="subtitle">
-                                <FiCircle color='#15D689' size={30} />
-                                <span>Existem <strong>2 publaces</strong> em <br /> um raio de 3km</span>
-                            </div>
+                            <input
+                                type="password"
+                                placeholder='Digite sua Senha'
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                            />
                         </div>
-                        <button className="subtitleRight">
-                            <FiEdit size={25} />
-                            <span>Editar <br /> Raio</span>
-                        </button>
-                    </div>
 
-                    <Marker
-                        position={latLon}
-                        icon={MapIcon}
-                    ></Marker>
-
-                    {
-                        <Marker
-                            position={latLon}
-                            icon={MapPlaceIcon}
-                        ></Marker>
-                    }
-
-                </MapContainer>
-                {showSideHeader &&
-                    <div className="sideHeader">
                         <button
-                            onClick={() => setShowSideHeader(false)}
+                            onClick={() => signIn(email, password)}
                         >
-                            <FiX size={35} />
+                            Entrar
                         </button>
-                        <p>Praça Joca Neves</p>
-                        {/* <img src={places[0].image} alt={places[0].nome}/> */}
+
+                        <button
+                            onClick={() => setLogin(false)}
+                        >
+                            Cadastre-se
+                        </button>
+                    </>
+                ) : (
+                    <div className="registerInputs">
+                        <input
+                            autoFocus
+                            placeholder="Digite seu Nome"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                        />
+
+                        <input
+                            placeholder='Digite seu Email'
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                        />
+
+                        <input
+                            type="password"
+                            placeholder='Digite sua Senha'
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                        />
+
+                        <button
+                            onClick={register}
+                        >
+                            Cadastrar
+                        </button>
                     </div>
-                }
+                )}
             </div>
-        </div>
+        </div >
     )
 }
 
