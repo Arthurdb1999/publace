@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { TileLayer, Marker, Popup, MapContainer } from 'react-leaflet'
-import { FiX, FiCircle, FiEdit } from 'react-icons/fi'
+import { FiX, FiCircle, FiEdit, FiLogOut } from 'react-icons/fi'
 import { LatLngExpression } from 'leaflet'
-
-import { places } from '../utils/places'
 
 import 'leaflet/dist/leaflet.css'
 import '../styles/publace.css'
@@ -19,7 +17,7 @@ function Publace() {
 
     const [showSideHeader, setShowSideHeader] = useState(true)
     const [latLon, setLatLon] = useState<LatLngExpression>([0, 0])
-    const { signed } = useAuth()
+    const { signed, signOut } = useAuth()
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(({ coords }) => {
@@ -32,6 +30,9 @@ function Publace() {
             <div id="page-map">
                 <div className='header'>
                     <img src={publaceLogo} alt="publace" />
+                    <button onClick={signOut}>
+                        <FiLogOut size={35} />
+                    </button>
                 </div>
 
                 <div className='content'>
@@ -62,7 +63,10 @@ function Publace() {
                                     <span>Existem <strong>2 publaces</strong> em <br /> um raio de 3km</span>
                                 </div>
                             </div>
-                            <button className="subtitleRight">
+                            <button
+                                className="subtitleRight"
+                                onClick={() => { }}
+                            >
                                 <FiEdit size={25} />
                                 <span>Editar <br /> Raio</span>
                             </button>
@@ -77,7 +81,11 @@ function Publace() {
                             <Marker
                                 position={latLon}
                                 icon={MapPlaceIcon}
-                            ></Marker>
+                            >
+                                <Popup closeButton={false} minWidth={240} maxWidth={240} className="map-popup">
+                                    Joca Neves
+                                </Popup>
+                            </Marker>
                         }
 
                     </MapContainer>
@@ -89,7 +97,6 @@ function Publace() {
                                 <FiX size={35} />
                             </button>
                             <p>Praça Joca Neves</p>
-                            {/* <img src={places[0].image} alt={places[0].nome}/> */}
                         </div>
                     }
                 </div>
