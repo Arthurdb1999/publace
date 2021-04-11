@@ -1,0 +1,44 @@
+:root {
+    --color-primary: #15C3D6;
+    --color-secondary: #15D689;
+    --color-primary-bg: #D0F3F6;
+    --color-primary-medium: #13AEBF;
+    --color-secondary-dark: #0A6B44;
+    --color-secondary-medium: #10AB6D;
+    --color-line: #D3D3D3;
+
+    font-size: 60%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    height: 100vh;
+}
+
+body {
+    background: var(--color-bg-primary);
+}
+
+#root {
+    display: flex;
+}
+
+body, input, button, textarea, span {
+    font: 500 1.6rem Roboto, sans-serif;
+}
+
+.container {
+    width: 90vw;
+    max-width: 700px;
+}
+
+@media (min-width: 700px) {
+    :root {
+        font-size: 62.5%;
+    }
+}

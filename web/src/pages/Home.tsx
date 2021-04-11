@@ -1,0 +1,94 @@
+import React, { useEffect, useState } from 'react'
+import { TileLayer, Marker, Popup, MapContainer } from 'react-leaflet'
+import publaceLogo from '../assets/publaceLogo.svg'
+import { FiX, FiCircle, FiEdit } from 'react-icons/fi'
+import { places } from '../utils/places'
+import Navigation from '../assets/icons/navigation.svg'
+
+import 'leaflet/dist/leaflet.css'
+import '../styles/home.css'
+import MapIcon from '../utils/mapIcon'
+import MapPlaceIcon from '../utils/mapPlaceIcon'
+import { LatLngExpression } from 'leaflet'
+
+function Home() {
+
+    const [showSideHeader, setShowSideHeader] = useState(true)
+    const [latLon, setLatLon] = useState<LatLngExpression>([0, 0])
+
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
+            setLatLon([coords.latitude, coords.longitude])
+        })
+    }, [])
+
+    return (
+        <div id="page-map">
+            <div className='header'>
+                <img src={publaceLogo} alt="publace" />
+            </div>
+
+            <div className='content'>
+                <MapContainer
+                    center={[-27.8146158, -50.3228624]}
+                    zoom={15}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                    }}
+                >
+                    <TileLayer
+                        url='https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}'
+                        tileSize={256}
+                        attribution='© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>'
+                        maxZoom={18}
+                        id='mapbox/light-v10'
+                        accessToken='pk.eyJ1IjoiYXJ0aHVyZGIxOTk5IiwiYSI6ImNrZzdkZmpiajA2ZXEyeW16OXZ6N200a2wifQ.SPOZk5iCSDYWLNqS62uB8w'
+                    />
+                    <div className="subtitles">
+                        <div className="subtitleLeft">
+                            <div className="subtitle">
+                                <img src={Navigation} alt="Localização atual" />
+                                <span>Localização atual</span>
+                            </div>
+                            <div className="subtitle">
+                                <FiCircle color='#15D689' size={30} />
+                                <span>Existem <strong>2 publaces</strong> em <br /> um raio de 3km</span>
+                            </div>
+                        </div>
+                        <button className="subtitleRight">
+                            <FiEdit size={25} />
+                            <span>Editar <br /> Raio</span>
+                        </button>
+                    </div>
+
+                    <Marker
+                        position={latLon}
+                        icon={MapIcon}
+                    ></Marker>
+
+                    {
+                        <Marker
+                            position={latLon}
+                            icon={MapPlaceIcon}
+                        ></Marker>
+                    }
+
+                </MapContainer>
+                {showSideHeader &&
+                    <div className="sideHeader">
+                        <button
+                            onClick={() => setShowSideHeader(false)}
+                        >
+                            <FiX size={35} />
+                        </button>
+                        <p>Praça Joca Neves</p>
+                        {/* <img src={places[0].image} alt={places[0].nome}/> */}
+                    </div>
+                }
+            </div>
+        </div>
+    )
+}
+
+export default Home
