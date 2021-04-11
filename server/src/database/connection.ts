@@ -8,4 +8,6 @@ const db = new Client({
     database: 'publace'
 })
 
+db.connect()
+
 export default db

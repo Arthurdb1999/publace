@@ -17,7 +17,7 @@ function Home() {
 
     async function register() {
 
-        const response = await api.post('/user', {
+        await api.post('/user', {
             name, email, password
         })
 

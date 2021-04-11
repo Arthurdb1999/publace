@@ -16,7 +16,7 @@ interface AuthContextData {
     signed: boolean;
     user: User | null;
     loading: boolean;
-    signIn: (email: string, senha: string) => Promise<void | Error>;
+    signIn: (email: string, password: string) => Promise<void | Error>;
     signOut(): void;
 }
 
@@ -39,10 +39,10 @@ export const AuthProvider: React.FC = ({ children }) => {
         }
     }, [])
 
-    async function signIn(email: string, senha: string): Promise<void | Error> {
+    async function signIn(email: string, password: string): Promise<void | Error> {
         setLoading(true)
         try {
-            const data = await api.post<SignInResponse>('/login', { email, senha })
+            const data = await api.post<SignInResponse>('/login', { email, password })
             setUser(data.data.user)
             api.defaults.headers['Authorization'] = `Bearer ${data.data.token}`
 

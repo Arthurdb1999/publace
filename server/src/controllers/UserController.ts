@@ -5,8 +5,9 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 interface User {
+    id: number;
     email: string;
-    nome: string;
+    name: string;
     password: string;
 }
 
@@ -15,21 +16,21 @@ export default class UserController {
 
         const { email, password } = req.body
 
-        db.connect()
-
         try {
             const { rows: [user] } = await db.query<User>(`SELECT * from usuario WHERE email = '${email}'`)
-
-            db.end()
 
             if (user) {
                 if (await bcrypt.compare(password, user.password)) {
                     return res.json({
-                        user,
+                        user: {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email
+                        },
                         token: jwt.sign({
                             email: user.email,
-                            nome: user.nome
-                        }, process.env.APP_SECRET)
+                            nome: user.name
+                        }, process.env.APP_SECRET as string)
                     })
                 } else {
                     return res.status(400).json({ message: 'Senha incorreta!' })
@@ -39,7 +40,6 @@ export default class UserController {
             }
 
         } catch (error) {
-            db.end()
             console.log(error)
             return res.status(500).json({ error, message: 'Erro desconhecido!' })
         }
@@ -48,13 +48,9 @@ export default class UserController {
     async store(req: Request, res: Response) {
         const { email, name, password } = req.body
 
-        db.connect()
-
         try {
             await bcrypt.hash(password, 8, async (_err, hash) => {
-                await db.query(`INSERT INTO usuario VALUES (id, '${name}', '${email}', '${hash}')`)
-
-                db.end()
+                await db.query(`INSERT INTO usuario VALUES (default, '${name}', '${email}', '${hash}')`)
 
                 return res.json({ message: 'Usuário cadastrado!' })
             })
