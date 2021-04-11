@@ -33,19 +33,22 @@ function Publace() {
     const { signed, signOut } = useAuth()
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(({ coords }) => {
-            setLatLon([coords.latitude, coords.longitude])
-        })
+
     }, [])
 
     useEffect(() => {
-        async function loadPlaces() {
-            const response = await api.get('/places')
+        navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+            setLatLon([coords.latitude, coords.longitude])
+
+            const response = await api.get('/places', {
+                params: {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                }
+            })
 
             setPlaces(response.data)
-        }
-
-        loadPlaces()
+        })
 
     }, [])
 
@@ -140,7 +143,7 @@ function Publace() {
                                 <div className="placeInfo">
                                     <FiUsers size={45} />
                                     <span id="peopleCount">10</span>
-                                    <span id="infoDescription">pessoas estão <br/> presentes!</span>
+                                    <span id="infoDescription">pessoas estão <br /> presentes!</span>
                                 </div>
                                 <div className="placeInfo">
                                     <FiCheckCircle size={45} />
@@ -150,7 +153,7 @@ function Publace() {
                                 <div className="placeInfo">
                                     <FiInfo size={45} />
                                     <span id="peopleCount">10</span>
-                                    <span id="infoDescription">pessoas não <br/> tem certeza!</span>
+                                    <span id="infoDescription">pessoas não <br /> tem certeza!</span>
                                 </div>
                             </div>
                             <span id="distance">Você está a <strong>2.5km</strong> de distância do local!</span>
