@@ -97,7 +97,7 @@ function Publace() {
 
         const updatedPlaces = places.map(place => {
             place.relations.map(relation => {
-                if (relation.id !== place_usuario_id) {
+                if (relation?.id !== place_usuario_id) {
                     return relation
                 }
                 return null

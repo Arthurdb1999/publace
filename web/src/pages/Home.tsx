@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { FiArrowLeft } from 'react-icons/fi'
 
 import publaceLogo from '../assets/publaceLogo.svg'
 
@@ -81,12 +82,19 @@ function Home() {
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                         />
+                        <div className="buttons">
+                            <button
+                                onClick={() => setLogin(true)}
+                            >
+                                <FiArrowLeft size={30} />
+                            </button>
+                            <button
+                                onClick={register}
+                            >
+                                Cadastrar
+                            </button>
 
-                        <button
-                            onClick={register}
-                        >
-                            Cadastrar
-                        </button>
+                        </div>
                     </div>
                 )}
             </div>
