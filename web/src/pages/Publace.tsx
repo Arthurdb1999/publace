@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { TileLayer, Marker, Popup, MapContainer } from 'react-leaflet'
-import { FiX, FiCircle, FiEdit, FiLogOut, FiUsers, FiCheckCircle, FiInfo } from 'react-icons/fi'
+import { TileLayer, Marker, Popup, MapContainer,  Circle } from 'react-leaflet'
+import { FiX, FiCircle, FiLogOut, FiUsers, FiCheckCircle, FiInfo } from 'react-icons/fi'
 import { LatLngExpression } from 'leaflet'
 
 import 'leaflet/dist/leaflet.css'
-import '../styles/publace.css'
+import '../styles/pages/publace.css'
 
 import publaceLogo from '../assets/publaceLogo.svg'
 import Navigation from '../assets/icons/navigation.svg'
 import MapIcon from '../utils/mapIcon'
 import MapPlaceIcon from '../utils/mapPlaceIcon'
+import MapPresentPlaceIcon from '../utils/mapPresentPlaceIcon'
 import { useAuth } from '../contexts/AuthContext'
 import { Redirect } from 'react-router'
 import api from '../services/api'
+// import Alert from '../components/Alert'
 
 interface Place {
     id: number;
@@ -21,6 +23,14 @@ interface Place {
     name: string;
     descricao: string;
     image_url: string;
+    distance: number;
+    radius: string;
+    relations: {
+        id: number;
+        usuario_id: number;
+        place_id: number;
+        relation_id: number;
+    }[]
 }
 
 function Publace() {
@@ -29,16 +39,16 @@ function Publace() {
     const [latLon, setLatLon] = useState<LatLngExpression>([0, 0])
     const [places, setPlaces] = useState<Place[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place>()
+    // const [radius, setRadius] = useState<any>()
+    const [placesCount, setPlacesCount] = useState(0)
 
-    const { signed, signOut } = useAuth()
-
-    useEffect(() => {
-
-    }, [])
+    const { signed, signOut, user } = useAuth()
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(async ({ coords }) => {
             setLatLon([coords.latitude, coords.longitude])
+
+            console.log(coords.latitude, coords.longitude)
 
             const response = await api.get('/places', {
                 params: {
@@ -47,10 +57,62 @@ function Publace() {
                 }
             })
 
-            setPlaces(response.data)
+            setPlaces(response.data.serializedPlaces)
+            setPlacesCount(response.data.count)
+            // const parsedGeoJSON = JSON.parse(response.data.radius)
+            // setRadius(parsedGeoJSON)
         })
 
     }, [])
+
+    // function editRadius() {
+    //     return (
+    //         <Alert />
+    //     )
+    // }
+
+    async function signalPresence(relation: string) {
+        await api.post('/relation', {
+            relation_id: relation === 'at' ? 1 : (relation === 'maybe' ? 2 : 3),
+            place_id: selectedPlace?.id
+        })
+
+        const updatedPlaces = places.map(place => {
+            if (place.id === selectedPlace?.id) {
+                place.relations.push({
+                    id: place.relations[place.relations.length - 1]?.id + 1,
+                    place_id: selectedPlace?.id,
+                    relation_id: 1,
+                    usuario_id: user?.id ? user.id : 0
+                })
+            }
+
+            return place
+        })
+
+        setPlaces(updatedPlaces)
+    }
+
+    async function notAnymore(place_usuario_id: number) {
+
+        const updatedPlaces = places.map(place => {
+            place.relations.map(relation => {
+                if (relation.id !== place_usuario_id) {
+                    return relation
+                }
+                return null
+            })
+            return place
+        })
+
+        setPlaces(updatedPlaces)
+
+        await api.delete('/relation', {
+            params: {
+                place_usuario_id
+            }
+        })
+    }
 
     return (
         signed ? (
@@ -87,43 +149,74 @@ function Publace() {
                                 </div>
                                 <div className="subtitle">
                                     <FiCircle color='#15D689' size={30} />
-                                    <span>Existem <strong>2 publaces</strong> em <br /> um raio de 3km</span>
+                                    <span>Existem <strong>{placesCount} publaces</strong> em <br /> um raio de 1km</span>
                                 </div>
                             </div>
-                            <button
+                            {/* <button
                                 className="subtitleRight"
-                                onClick={() => { }}
+                            // onClick={editRadius}
                             >
                                 <FiEdit size={25} />
                                 <span>Editar <br /> Raio</span>
-                            </button>
+                            </button> */}
                         </div>
 
                         <Marker
                             position={latLon}
                             icon={MapIcon}
+
                         ></Marker>
+                        <Circle center={latLon} radius={1000} pathOptions={{ color: '#15D689' }} />
 
                         {places?.map(place => (
-                            <Marker
-                                key={place.id}
-                                position={[place.latitude, place.longitude]}
-                                icon={MapPlaceIcon}
-                            >
-                                <Popup closeButton={false} minWidth={240} maxWidth={240} className="map-popup">
-                                    {place.name}
-                                    <button
-                                        onClick={() => {
-                                            setSelectedPlace(place)
-                                            setShowSideHeader(true)
-                                        }}
-                                    >
-                                        Ver
-                                    </button>
-                                </Popup>
-                            </Marker>
+                            place.relations.filter(relation => relation?.usuario_id === user?.id && relation?.relation_id === 1).length === 0 ? (
+                                <Marker
+                                    key={place.id}
+                                    position={[place.latitude, place.longitude]}
+                                    icon={MapPlaceIcon}
+                                >
+                                    <Popup closeButton={false} minWidth={150} maxWidth={150} className="map-popup">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedPlace(place)
+                                                setShowSideHeader(true)
+                                            }}
+                                        >
+                                            {place.name}
+                                            <div className="littleInfos">
+                                                <FiUsers size={20} />
+                                                <span>{place.relations.filter(relation => relation?.relation_id === 1).length}</span>
+                                                <FiCheckCircle size={20} />
+                                                <span>{place.relations.filter(relation => relation?.relation_id === 3).length}</span>
+                                            </div>
+                                        </button>
+                                    </Popup>
+                                </Marker>
+                            ) : (
+                                <Marker
+                                    key={place.id}
+                                    position={[place.latitude, place.longitude]}
+                                    icon={MapPresentPlaceIcon}
+                                >
+                                    <Popup closeButton={false} minWidth={150} maxWidth={150} className="presentMap-popup">
+                                        {place.name}
+                                        <div className="presentLittleInfos">
+                                            <FiUsers size={20} color="#0A6B44" />
+                                            <span>{place.relations.filter(relation => relation?.relation_id === 1).length}</span>
+                                            <FiCheckCircle size={20} color="#0A6B44" />
+                                            <span>{place.relations.filter(relation => relation?.relation_id === 3).length}</span>
+                                        </div>
+                                        <span id="whereAmI">Você está aqui!</span>
+                                        <button
+                                            id="notHereAnymoreButton"
+                                            onClick={() => notAnymore(place.relations.filter(relation => relation?.relation_id === 1)[0]?.id)}
+                                        >
+                                            Não estou mais
+                                        </button>
+                                    </Popup>
+                                </Marker>
+                            )
                         ))}
-
                     </MapContainer>
 
                     {showSideHeader &&
@@ -142,39 +235,39 @@ function Publace() {
                             <div className="placeInfoWrapper">
                                 <div className="placeInfo">
                                     <FiUsers size={45} />
-                                    <span id="peopleCount">10</span>
+                                    <span id="peopleCount">{selectedPlace?.relations.filter(relation => relation?.relation_id === 1).length}</span>
                                     <span id="infoDescription">pessoas estão <br /> presentes!</span>
                                 </div>
                                 <div className="placeInfo">
                                     <FiCheckCircle size={45} />
-                                    <span id="peopleCount">10</span>
+                                    <span id="peopleCount">{selectedPlace?.relations.filter(relation => relation?.relation_id === 3).length}</span>
                                     <span id="infoDescription">pessoas irão!</span>
                                 </div>
                                 <div className="placeInfo">
                                     <FiInfo size={45} />
-                                    <span id="peopleCount">10</span>
+                                    <span id="peopleCount">{selectedPlace?.relations.filter(relation => relation?.relation_id === 2).length}</span>
                                     <span id="infoDescription">pessoas não <br /> tem certeza!</span>
                                 </div>
                             </div>
-                            <span id="distance">Você está a <strong>2.5km</strong> de distância do local!</span>
+                            <span id="distance">Você está a <strong>{(selectedPlace.distance).toFixed(2)} km</strong> de distância do local!</span>
 
                             <button
                                 className="actionButton"
-                                onClick={() => { }}
+                                onClick={() => signalPresence('at')}
                             >
                                 Estou aqui!
                             </button>
 
                             <button
                                 className="actionButton"
-                                onClick={() => { }}
+                                onClick={() => signalPresence('going')}
                             >
                                 Comparecerei!
                             </button>
 
                             <button
                                 className="actionButton"
-                                onClick={() => { }}
+                                onClick={() => signalPresence('maybe')}
                             >
                                 Talvez eu vá!
                             </button>

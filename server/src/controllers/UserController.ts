@@ -11,6 +11,12 @@ interface User {
     password: string;
 }
 
+export interface JwtInfo {
+    id: number;
+    name: string;
+    email: string
+}
+
 export default class UserController {
     async login(req: Request, res: Response) {
 
@@ -28,6 +34,7 @@ export default class UserController {
                             email: user.email
                         },
                         token: jwt.sign({
+                            id: user.id,
                             email: user.email,
                             nome: user.name
                         }, process.env.APP_SECRET as string)

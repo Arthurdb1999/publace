@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 import publaceLogo from '../assets/publaceLogo.svg'
 
-import '../styles/home.css'
+import '../styles/pages/home.css'
 import api from '../services/api'
 
 function Home() {
